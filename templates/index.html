@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des contacts</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<p>Gestion des contacts</p>
+
+<form id="contactForm">
+
+    <div>
+        <label for="nom">Nom : </label>
+        <input id="nom" name="nom" type="text">
+    </div>
+
+    <div>
+        <label for="prenom">Prenom : </label>
+        <input id="prenom" name="prenom" type="text">
+    </div>
+
+    <div>
+        <label for="telephone">GSM : </label>
+        <input id="telephone" name="telephone" type="text">
+    </div>
+
+    <div>
+        <label for="mail">Mail : </label>
+        <input id="mail" name="mail" type="text">
+    </div>
+
+    <div>
+        <button type="submit">Créer le contact</button>
+    </div>
+</form>
+<div id="contactContainer"></div>
+
+<div id="contactsContainer">
+    {% for contact in contacts %}
+    <div class="contact">
+        <div class="contact-info">
+            <span class="contact-name">{{ contact.nom }} {{ contact.prenom }}</span>
+            <span class="contact-email">{{ contact.email }}</span>
+            <span class="contact-telephone">{{ contact.telephone }}</span>
+        </div>
+        <div class="contact-actions">
+                <button class="edit-contact" data-contact-id="{{ contact.id }}">Modifier</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="editContactFormContainer">
+        <h2>Modifier le contact</h2>
+        <form id="editContactForm">
+            <input type="hidden" id="editContactId" name="contactId" value="">
+            <div>
+                <label for="editNom">Nom:</label>
+                <input type="text" id="editNom" name="nom" value="">
+            </div>
+            <div>
+                <label for="editPrenom">Prénom:</label>
+                <input type="text" id="editPrenom" name="prenom" value="">
+            </div>
+            <div>
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" name="email" value="">
+            </div>
+            <div>
+                <label for="editTelephone">Email:</label>
+                <input type="email" id="editTelephone" name="email" value="">
+            </div>
+            <div>
+                <button type="submit">Enregistrer</button>
+                <button type="button" id="cancelEdit">Annuler</button>
+            </div>
+        </form>
+    </div>
+
+
+<script>
+    $(document).ready(function(){
+        $('#contactForm').submit(function(event){
+            event.preventDefault();
+
+            const form = $(this);
+            const url = "/api/contact";
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                contentType: 'application/json',
+                data:JSON.stringify({
+                    nom: $('#nom').val(),
+                    prenom: $('#prenom').val(),
+                    mail: $('#mail').val(),
+                    telephone: $('#telephone').val(),
+                }),
+                success: function(response){
+                    $('#contactContainer').text(response.message);
+                    form[0].reset()
+                },
+                error: function(err){
+                    console.error(err);
+                }
+            });
+        });
+    });
+
+    $('#editContactForm').submit(function(event){
+            event.preventDefault();
+
+            const form = $(this);
+            const url = "/api/contact/" + $('#editContactId').val() + '/';
+            $.ajax({
+                type: 'PUT',
+                url: url,
+                contentType: 'application/json',
+                data:JSON.stringify({
+                    nom: $('#editNom').val(),
+                    prenom: $('#editPrenom').val(),
+                    mail: $('#editMail').val(),
+                    telephone: $('#editTelephone').val(),
+                }),
+                success: function(response){
+
+                $('#editContactFormContainer').hide();
+                $('#contactsContainer').show();
+
+                // Mettre à jour les informations du contact modifié dans l'affichage
+                var contact = response.contact;
+                var contactInfo = $('.contact-info').find('.contact-name:contains(' + contact.nom + ')').closest('.contact-info');
+                contactInfo.find('.contact-name').text(contact.nom);
+                contactInfo.find('.contact-prenom').text(contact.prenom);
+                contactInfo.find('.contact-email').text(contact.email);
+                contactInfo.find('.contact-telephone').text(contact.telephone);
+            },
+            error: function(error) {
+                console.error(error);
+            }
+        });
+            });
+
+    // Annuler la modification et afficher la liste des contacts
+    $('#cancelEdit').click(function() {
+        $('#editContactFormContainer').hide();
+        $('#contactsContainer').show();
+    });
+
+</script>
+</body>
+</html>
