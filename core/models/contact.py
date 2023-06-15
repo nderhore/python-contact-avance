@@ -1,4 +1,4 @@
-from sqlalchemy import String, Column, Integer, PrimaryKeyConstraint
+from sqlalchemy import Column, Integer, PrimaryKeyConstraint, String
 
 from core.config.database import Base
 
@@ -12,4 +12,4 @@ class Contact(Base):
     telephone = Column(String(10), nullable=False)
     mail = Column(String(40), nullable=False)
 
-    __table_args__ = (PrimaryKeyConstraint('id'),)
+    __table_args__ = (PrimaryKeyConstraint("id"),)
